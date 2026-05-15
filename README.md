@@ -92,11 +92,9 @@ README.md
 
 # Running the Project
 
-First, install the required dependencies:
+First, make sure the required libraries mentioned in the code are installed on your system.
 
-pip install torch torchvision transformers scikit learn pandas numpy matplotlib pillow tqdm
-
-Next, prepare a CSV file containing image URLs and their associated year labels. Update the dataset paths inside the notebook configuration accordingly.
+Then, check whether the dataset (meta.csv) is in the same directory as the .ipynb file.
 
 Finally, launch Jupyter Notebook and execute the notebook cells sequentially.
 
