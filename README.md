@@ -1,108 +1,44 @@
-# Image-Year-Prediction
+# Image Year Prediction
+
 Machine Learning and Pattern Recognition Final Project
-# OVERVIEW
 
-This project focuses on predicting the year in which an image was captured using a combination of semantic image embeddings and handcrafted numerical image features.
+# Overview
 
-Large image archives often contain missing, inaccurate, or loosely estimated timestamps. This project aims to provide a scalable way to estimate image dates more precisely using machine learning.
+This project focuses on predicting the year in which an image was captured using a combination of semantic image embeddings and handcrafted numerical image features. Large image archives often contain missing, inaccurate, or loosely estimated timestamps, making organization and verification difficult. Our goal is to build a scalable machine learning pipeline capable of estimating image dates more precisely.
 
-The pipeline combines CLIP image embeddings for semantic understanding with handcrafted numerical features and traditional machine learning models.
+The system combines CLIP image embeddings for high level semantic understanding with handcrafted numerical image statistics. These representations are then used to train multiple traditional machine learning models for temporal prediction. The project is trained on a large scale dataset containing approximately one million images spanning seven decades.
 
-The system is trained on a large scale dataset containing approximately one million images spanning seven decades.
+# Motivation
 
-# MOTIVATION
+Many historical and institutional archives contain millions of undated photographs. Automatically estimating image years can significantly improve digital archive organization, metadata verification, and historical preservation efforts. Such a system can also help detect inconsistencies in online media and assist individuals in dating old family photographs more accurately.
 
-Many historical and institutional archives contain millions of undated photographs. Automatically estimating image years can help improve archive organization, verify metadata consistency, detect misleading media, and assist individuals in dating old family photographs.
+Potential applications include digital archiving systems, museum collections, historical preservation projects, media verification pipelines, and academic archival platforms.
 
-Potential applications include digital archiving systems, historical preservation, museum collections, and media verification.
+# Dataset
 
-# DATASET
+The dataset contains approximately one million labeled images collected across multiple decades of visual history. Each sample consists of an image URL paired with its ground truth year label.
 
-The dataset contains approximately one million labeled images.
+To maintain balanced temporal distributions, the pipeline performs stratified random sampling across years before training. This helps reduce bias toward heavily represented time periods.
 
-Each image includes:
+# Methodology
 
-Image URL
+The pipeline begins by loading and cleaning metadata from CSV files. Missing values are removed and year labels are converted into integer targets. Images are then downloaded in parallel using multithreading to accelerate preprocessing, while corrupted or inaccessible files are skipped automatically.
 
-Ground truth year label
-
-Images span roughly seventy years of visual history.
-
-The pipeline performs stratified random sampling across years to maintain balance in the dataset.
-
-# PIPELINE
-
-Metadata Processing
-
-The metadata CSV file is loaded and cleaned.
-
-Missing values are removed.
-
-Year labels are converted into integer values.
-
-Parallel Image Downloading
-
-Images are downloaded using multithreading for faster preprocessing.
-
-Corrupted or inaccessible images are skipped automatically.
-
-# CLIP Embedding Extraction
-
-The project uses the CLIP vision model:
+For semantic feature extraction, the project uses the CLIP vision model:
 
 openai/clip vit base patch32
 
-CLIP embeddings capture high level semantic information such as:
+CLIP embeddings capture rich visual semantics such as fashion trends, vehicle designs, architectural styles, scene composition, and photography characteristics. These embeddings provide strong temporal signals that are highly useful for year prediction tasks.
 
-Fashion trends
+In addition to CLIP embeddings, the pipeline extracts handcrafted numerical image features including pixel statistics, RGB channel distributions, brightness information, and image dimension properties. These low level visual features complement the high level semantic representations learned by CLIP.
 
-Vehicles
+The semantic embeddings and numerical features are concatenated into a unified feature matrix. Preprocessing techniques such as standard scaling and PCA dimensionality reduction are then applied before training.
 
-Architecture
+To improve stability and reduce label noise, years are grouped into five year bins. For example, years from 1980 to 1984 belong to one category, while 1985 to 1989 belong to another. This framing transforms the problem into a more robust temporal classification task.
 
-Scene context
+# Models
 
-Photography styles
-
-# Numerical Feature Extraction
-
-In addition to CLIP embeddings, the project extracts handcrafted image statistics including:
-
-Global pixel mean
-
-Standard deviation
-
-RGB channel statistics
-
-Brightness information
-
-Image dimensions
-
-Color distribution features
-
-Feature Combination
-
-CLIP embeddings and numerical features are concatenated into a single feature matrix.
-
-The pipeline then applies preprocessing techniques such as:
-
-Standard scaling
-
-PCA dimensionality reduction
-
-Temporal Binning
-
-Years are grouped into five year bins to reduce noise and improve classification stability.
-
-Example:
-
-1980 to 1984 belong to one bin
-
-1985 to 1989 belong to another bin
-
-# Model Training
-
-The project compares multiple machine learning models including:
+The project evaluates several traditional machine learning approaches, including:
 
 Random Forest
 
@@ -112,37 +48,21 @@ SGD Classifier
 
 Logistic Regression
 
-A smaller neural network baseline implemented in PyTorch is also included for comparison.
+In addition, a smaller neural network baseline implemented in PyTorch is included for comparison.
 
-Cross Validation
+Training uses stratified five fold cross validation to ensure balanced temporal distributions across folds and to produce more reliable evaluation metrics.
 
-The training pipeline uses stratified five fold cross validation to improve evaluation reliability and reduce variance.
+# Evaluation
 
-# Evaluation Metrics
+Performance is evaluated primarily using Mean Absolute Error and classification accuracy within plus or minus five years.
 
-The primary evaluation metrics are:
+A prediction is considered correct if the predicted year lies within five years of the actual year. This evaluation strategy reflects the practical difficulty of exact year prediction while still maintaining meaningful temporal precision.
 
-Mean Absolute Error
+The project currently achieves accuracy exceeding 60 percent within the plus or minus five year range, representing a strong improvement over many traditional approaches reported in prior literature.
 
-Classification accuracy within plus or minus five years
+Among the evaluated models, Logistic Regression trained on combined CLIP embeddings and numerical features performed particularly well. The experiments also demonstrate that traditional machine learning models can outperform a smaller neural network baseline when paired with strong semantic image representations.
 
-A prediction is considered correct if the predicted year lies within five years of the actual year.
-
-# RESULTS
-
-The best performing models achieve:
-
-More than 60 percent accuracy within plus or minus five years
-
-Competitive mean absolute error values across decades
-
-Strong improvements over earlier traditional approaches
-
-Among the evaluated methods, Logistic Regression using combined CLIP and numerical features performed particularly well.
-
-The project also demonstrated that traditional machine learning models can outperform a smaller neural network baseline when paired with strong semantic embeddings.
-
-# TECHNOLOGIES USED
+# Technologies Used
 
 Python
 
@@ -162,47 +82,33 @@ PIL
 
 OpenAI CLIP
 
-REPOSITORY STRUCTURE
+# Repository Structure
 
 Apr23CodeUpdatedUpdated.ipynb
 
-sample_ready.csv
+meta.csv
 
-downloaded_images/
+README.md
 
-embeddings/
+# Running the Project
 
-# RUNNING THE PROJECT
-
-Install Dependencies
+First, install the required dependencies:
 
 pip install torch torchvision transformers scikit learn pandas numpy matplotlib pillow tqdm
 
-Prepare Dataset
+Next, prepare a CSV file containing image URLs and their associated year labels. Update the dataset paths inside the notebook configuration accordingly.
 
-Provide a CSV file containing image URLs and associated year labels.
+Finally, launch Jupyter Notebook and execute the notebook cells sequentially.
 
-Update the dataset paths inside the notebook.
+# Key Design Decisions
 
-Run the Notebook
+CLIP embeddings were chosen because they encode rich semantic visual information learned from large scale internet data. This enables the model to capture temporal cues such as changes in fashion, architecture, vehicle design, and photography trends across decades.
 
-Launch Jupyter Notebook and execute the notebook cells sequentially.
+Traditional machine learning models were selected because they train efficiently, require fewer computational resources, and perform surprisingly well when combined with pretrained semantic embeddings.
 
-# KEY DESIGN DECISIONS
+Five year temporal bins were used because exact year prediction is inherently noisy. Grouping years into short intervals improves classification stability while still preserving useful chronological precision.
 
-Why CLIP?
-
-CLIP embeddings encode rich semantic visual information learned from large scale internet data. This helps the model capture temporal cues such as fashion evolution, vehicle design changes, architectural styles, and photography trends.
-
-Why Traditional Machine Learning?
-
-Traditional classifiers train faster, require fewer computational resources, and work effectively when paired with pretrained semantic embeddings.
-
-Why Five Year Bins?
-
-Exact year prediction is extremely noisy. Five year intervals improve stability while still preserving useful temporal precision.
-
-# POTENTIAL APPLICATIONS
+# Potential Applications
 
 Historical archive organization
 
@@ -212,29 +118,16 @@ Digital humanities research
 
 Family photo dating services
 
-News media verification
+News and media verification
 
 Museum digitization projects
 
 Large scale archival indexing
 
-# FUTURE IMPROVEMENTS
+# Future Improvements
 
-Potential future extensions include:
+Possible future extensions include larger transformer based temporal models, multimodal metadata integration, geographic conditioning, self supervised temporal pretraining, and deployment through real time inference APIs or web applications.
 
-Larger transformer based temporal models
-
-Multimodal metadata integration
-
-Geographic conditioning
-
-Self supervised temporal pretraining
-
-Web application deployment
-
-Real time inference APIs
-
-
-LICENSE
+License
 
 This project is intended for research and educational purposes.
